@@ -1,39 +1,56 @@
 const express = require("express");
-const serverless = require("serverless-http");
+const serverlessHttp = require("serverless-http");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-
+const mysql = require("mysql");
 const app = express();
 
 app.use(cors());
 app.use(bodyParser.json());
 
+const connection = mysql.createConnection({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: "todos"
+});
+
 
 //GET /tasks:
 app.get("/tasks", function (request, response) {
-  response.send({
-    tasks: [
-      {
-        date_added: "2020-01-09",
-        task: "water plants",
-        task_complete: true,
-        id: 1
-      }
-    ]
-  });
-});
+  connection.query("SELECT * FROM Task", function (err, data) {
+    if (err) {
+      response.status(500).json({
+        error: err
+      });
+    } else {
+      response.status(200).json({
+        todos: data
+      });
+    }
+  })
+})
 
 //PUT
-
 app.put("/tasks/:id", function (request, response) {
 
   const updatedTask = request.body
   const id = request.params.id;
 
-  response.status(200).json ({
-    message: `Successfully updated task ID ${id} with date added: ${updatedTask.date_added}, task: ${updatedTask.task}, task_complete: ${updatedTask.task_complete}`
-  })
-})
+  connection.query(`UPDATE Task SET ? WHERE id=?`, [updatedTask, id],
+    function (err) {
+      if (err) {
+        response.status(500).json({
+          error: err
+        });
+      } else {
+        response.sendStatus(200);
+      }
+    }
+  )
+});
+
+
 
 //POST /tasks:
 app.post("/tasks", function (request, response) {
@@ -50,16 +67,13 @@ app.post("/tasks", function (request, response) {
 //DELETE
 app.delete("/tasks/:id", function (request, response) {
   const id = request.params.id;
-  const task = request.body.task;
-  const date_added = request.body.date_added;
-  const task_complete = request.body.task_complete;
 
   response.status(200).json({
-    message: `Received a request to delete task ID ${id} with date added: ${date_added}, task: ${task}, task_complete: ${task_complete}`
+    message: `Received a request to delete task ID ${id}`
   })
 })
 
-module.exports.handler = serverless(app);
+module.exports.handler = serverlessHttp(app);
 
 
 

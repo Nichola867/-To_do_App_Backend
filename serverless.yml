@@ -1,18 +1,19 @@
-
 service: todo-application-backend
-
 
 provider:
   name: aws
   runtime: nodejs12.x
   region: eu-west-1
 
-
-
 functions:
   tasks:
     handler: tasks.handler
+    environment: 
+      DB_HOST: ${opt:DB_HOST}
+      DB_USER: ${opt:DB_USER}
+      DB_PASSWORD: ${opt:DB_PASSWORD}      
     events:
+          #GET method updated
       - http:
           method: get
           path: tasks          
@@ -23,6 +24,7 @@ functions:
           path: tasks         
           cors: true
 
+          #PUT method updated
       - http:
           method: put
           path: tasks/{id}          
