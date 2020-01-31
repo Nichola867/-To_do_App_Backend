@@ -6,31 +6,29 @@ provider:
   region: eu-west-1
 
 functions:
-  tasks:
+  todos:
     handler: tasks.handler
     environment: 
       DB_HOST: ${opt:DB_HOST}
       DB_USER: ${opt:DB_USER}
       DB_PASSWORD: ${opt:DB_PASSWORD}      
-    events:
-          #GET method updated
+    events:         
       - http:
           method: get
-          path: tasks          
+          path: todos          
           cors: true
 
       - http:
           method: post
-          path: tasks         
+          path: todos         
           cors: true
 
-          #PUT method updated
       - http:
           method: put
-          path: tasks/{id}          
+          path: todos/{id}          
           cors: true
 
       - http:
           method: delete
-          path: tasks/{id}
+          path: todos/{id}
           cors: true
